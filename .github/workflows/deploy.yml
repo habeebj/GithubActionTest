@@ -8,7 +8,7 @@ env:
   REGISTRY: registry.naijavax.com
   SERVICE_NAME: testapi
   TAG: ${{ github.sha }}
-  REPOSITORY: ${{en.REGISTRY}}/${{env.SERVICE_NAME}}:${{env.TAG}}
+#   REPOSITORY: $REGISTRY/$SERVICE_NAME:$TAG
   CHARTS_DIR: ./charts/
   ENVIRONMENT: development
 
@@ -18,7 +18,7 @@ jobs:
       steps:
          - uses: actions/checkout@v3
          - name: Test
-           run: echo "$REPOSITORY"
+           run: echo "$REGISTRY/$SERVICE_NAME:$TAG"
 
 #          - uses: Azure/docker-login@v1
 #            with:
