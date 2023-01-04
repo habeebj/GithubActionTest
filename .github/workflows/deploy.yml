@@ -19,46 +19,43 @@ jobs:
            run: echo "$REGISTRY/$SERVICE_NAME:$GITHUB_RUN_NUMBER"
 
          - uses: Azure/docker-login@v1
-           with:
-              login-server: $REGISTRY
-              username: ${{ secrets.REGISTRY_USERNAME }}
-              password: ${{ secrets.REGISTRY_PASSWORD }}
+#            with:
+#               login-server: $REGISTRY
+#               username: ${{ secrets.REGISTRY_USERNAME }}
+#               password: ${{ secrets.REGISTRY_PASSWORD }}
 
          - run: |
               docker login registry.naijavax.com -u ${{ secrets.REGISTRY_USERNAME }} -p ${{ secrets.REGISTRY_PASSWORD }}
-         - name: End
-           run: echo "Done
+              docker build . -t $REGISTRY/$SERVICE_NAME:$GITHUB_RUN_NUMBER
+              docker push $REGISTRY/$SERVICE_NAME:$GITHUB_RUN_NUMBER
 
-#             docker build . -t $REGISTRY/$SERVICE_NAME:$GITHUB_RUN_NUMBER
-#              docker push $REGISTRY/$SERVICE_NAME:$GITHUB_RUN_NUMBER
+         - uses: Azure/k8s-set-context@v1
+           with:
+              kubeconfig: ${{ secrets.KUBE_CONFIG }}
 
-#          - uses: Azure/k8s-set-context@v1
+#          - uses: Azure/k8s-create-secret@v1
 #            with:
-#               kubeconfig: ${{ secrets.KUBE_CONFIG }}
+#               container-registry-url: contoso.azurecr.io
+#               container-registry-username: ${{ secrets.REGISTRY_USERNAME }}
+#               container-registry-password: ${{ secrets.REGISTRY_PASSWORD }}
+#               secret-name: demo-k8s-secret
 
-# #          - uses: Azure/k8s-create-secret@v1
-# #            with:
-# #               container-registry-url: contoso.azurecr.io
-# #               container-registry-username: ${{ secrets.REGISTRY_USERNAME }}
-# #               container-registry-password: ${{ secrets.REGISTRY_PASSWORD }}
-# #               secret-name: demo-k8s-secret
+         - uses: azure/k8s-bake@v2.2
+           with:
+              renderEngine: 'helm'
+              helmChart: '$CHARTS_DIR'
+              overrideFiles: '$CHARTS_DIR/values.yaml'
+              overrides: |
+                 fullnameOverride=$SERVICE_NAME
+                 release=$ENVIRONMENT
+                 image.repository=$REGISTRY/$SERVICE_NAME:$GITHUB_RUN_NUMBER
+              helm-version: 'latest'
+           id: bake
 
-#          - uses: azure/k8s-bake@v2.2
-#            with:
-#               renderEngine: 'helm'
-#               helmChart: '$CHARTS_DIR'
-#               overrideFiles: '$CHARTS_DIR/values.yaml'
-#               overrides: |
-#                  fullnameOverride=$SERVICE_NAME
-#                  release=$ENVIRONMENT
-#                  image.repository=$REGISTRY/$SERVICE_NAME:$GITHUB_RUN_NUMBER
-#               helm-version: 'latest'
-#            id: bake
-
-#          - uses: Azure/k8s-deploy@v1
-#            with:
-#               manifests: ${{ steps.bake.outputs.manifestsBundle }}
-# #               images: |
-# #                  $REGISTRY/$SERVICE_NAME:$GITHUB_RUN_NUMBER
-# #               imagepullsecrets: |
-# #                  demo-k8s-secret
+         - uses: Azure/k8s-deploy@v1
+           with:
+              manifests: ${{ steps.bake.outputs.manifestsBundle }}
+#               images: |
+#                  $REGISTRY/$SERVICE_NAME:$GITHUB_RUN_NUMBER
+#               imagepullsecrets: |
+#                  demo-k8s-secret
