@@ -25,7 +25,7 @@ jobs:
               password: ${{ secrets.REGISTRY_PASSWORD }}
 
          - run: |
-              docker login registry.naijavax.com
+              docker login registry.naijavax.com -u secrets.REGISTRY_USERNAME -p secrets.REGISTRY_PASSWORD
          - name: End
            run: echo "Done
 
