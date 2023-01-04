@@ -25,8 +25,8 @@ jobs:
               password: ${{ secrets.REGISTRY_PASSWORD }}
 
          - run: |
-              docker build . -t $REPOSITORY
-              docker push $REPOSITORY
+              docker build . -t ${REPOSITORY}
+              docker push ${REPOSITORY}
 
          - uses: Azure/k8s-set-context@v1
            with:
@@ -47,7 +47,7 @@ jobs:
               overrides: |
                  fullnameOverride=$SERVICE_NAME
                  release=$ENVIRONMENT
-                 image.repository=$REPOSITORY
+                 image.repository=${REPOSITORY}
               helm-version: 'latest'
            id: bake
 
@@ -55,6 +55,6 @@ jobs:
            with:
               manifests: ${{ steps.bake.outputs.manifestsBundle }}
               images: |
-                 $REPOSITORY
+                 ${REPOSITORY}
 #               imagepullsecrets: |
 #                  demo-k8s-secret
