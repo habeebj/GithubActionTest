@@ -16,7 +16,7 @@ jobs:
       steps:
          - uses: actions/checkout@v3
          - name: Test
-           run: echo "$REGISTRY/$SERVICE_NAME:${{ event.run_id }}"
+           run: echo "$REGISTRY/$SERVICE_NAME:$GITHUB_RUN_ID"
 
          - uses: Azure/docker-login@v1
            with:
@@ -25,8 +25,8 @@ jobs:
               password: ${{ secrets.REGISTRY_PASSWORD }}
 
          - run: |
-              docker build . -t $REGISTRY/$SERVICE_NAME:${{ event.run_id }}
-              docker push $REGISTRY/$SERVICE_NAME:${{ event.run_id }}
+              docker build . -t $REGISTRY/$SERVICE_NAME:$GITHUB_RUN_ID
+              docker push $REGISTRY/$SERVICE_NAME:$GITHUB_RUN_ID
 
          - uses: Azure/k8s-set-context@v1
            with:
@@ -47,7 +47,7 @@ jobs:
               overrides: |
                  fullnameOverride=$SERVICE_NAME
                  release=$ENVIRONMENT
-                 image.repository=$REGISTRY/$SERVICE_NAME:${{ event.run_id }}
+                 image.repository=$REGISTRY/$SERVICE_NAME:$GITHUB_RUN_ID
               helm-version: 'latest'
            id: bake
 
@@ -55,6 +55,6 @@ jobs:
            with:
               manifests: ${{ steps.bake.outputs.manifestsBundle }}
 #               images: |
-#                  $REGISTRY/$SERVICE_NAME:${{ event.run_id }}
+#                  $REGISTRY/$SERVICE_NAME:$GITHUB_RUN_ID
 #               imagepullsecrets: |
 #                  demo-k8s-secret
