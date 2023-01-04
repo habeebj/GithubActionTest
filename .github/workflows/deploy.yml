@@ -36,16 +36,19 @@ jobs:
       # - uses: Azure/k8s-set-context@v1
       #   with:
       #     kubeconfig: ${{ secrets.KUBE_CONFIG }}
+      - name: Install Helm
+        run: |
+          curl -fsSL -o get_helm.sh https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3
+          chmod 700 get_helm.sh
+          ./get_helm.sh
       
-      - name: Helm Bake
-        uses: licenseware/helm@v1.2
-        with:
-          action: template charts > deployment.yaml
-          values: "fullnameOverride=$SERVICE_NAME,nameOverride=$SERVICE_NAME,image.repository=$REGISTRY/$SERVICE_NAME:$GITHUB_RUN_NUMBER"
+      - name: Helm bake
+        run: |
+          ls
+          helm template --release-name $ENVIRONMENT charts --set fullnameOverride=$SERVICE_NAME --set nameOverride=$SERVICE_NAME --set image.repository=$REGISTRY/$SERVICE_NAME:$GITHUB_RUN_NUMBER > deployment.yaml
       
       - name: Preview
         run: |
-          ls
           cat deployment.yaml
 #       - name: Helm Bake
 #         uses: wahyd4/kubectl-helm-action@master
