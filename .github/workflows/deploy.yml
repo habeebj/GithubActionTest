@@ -7,7 +7,7 @@ on:
 env:
   REGISTRY: registry.naijavax.com
   SERVICE_NAME: testapi
-  CHARTS_DIR: ./charts/
+#   CHARTS_DIR: ./charts/
   ENVIRONMENT: development
 
 jobs:
@@ -24,10 +24,14 @@ jobs:
               username: ${{ secrets.REGISTRY_USERNAME }}
               password: ${{ secrets.REGISTRY_PASSWORD }}
 
-         - run: |
-              docker login registry.naijavax.com -u ${{ secrets.REGISTRY_USERNAME }} -p ${{ secrets.REGISTRY_PASSWORD }}
-              docker build . -t $REGISTRY/$SERVICE_NAME:$GITHUB_RUN_NUMBER
-              docker push $REGISTRY/$SERVICE_NAME:$GITHUB_RUN_NUMBER
+         - name: Docker Login
+           run: docker login registry.naijavax.com -u ${{ secrets.REGISTRY_USERNAME }} -p ${{ secrets.REGISTRY_PASSWORD }}
+         
+         - name: Docker Build
+           run: docker build . -t $REGISTRY/$SERVICE_NAME:$GITHUB_RUN_NUMBER
+         
+         - name: Docker Push
+           run: docker push $REGISTRY/$SERVICE_NAME:$GITHUB_RUN_NUMBER
 
          - uses: Azure/k8s-set-context@v1
            with:
@@ -43,7 +47,7 @@ jobs:
          - uses: azure/k8s-bake@v2.2
            with:
               renderEngine: 'helm'
-              helmChart: '$CHARTS_DIR'
+              helmChart: './charts/'
               overrideFiles: '$CHARTS_DIR/values.yaml'
               overrides: |
                  fullnameOverride=$SERVICE_NAME
