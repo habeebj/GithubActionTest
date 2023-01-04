@@ -8,7 +8,7 @@ env:
   REGISTRY: registry.naijavax.com
   SERVICE_NAME: testapi
   TAG: ${{ github.sha }}
-  REPOSITORY: $REGISTRY/$SERVICE_NAME:$TAG
+  REPOSITORY: ${REGISTRY}/${SERVICE_NAME}:${TAG}
   CHARTS_DIR: ./charts/
   ENVIRONMENT: development
 
@@ -16,45 +16,47 @@ jobs:
    build:
       runs-on: ubuntu-latest
       steps:
-         - uses: actions/checkout@master
+         - uses: actions/checkout@v3
+         - name: Test
+           run: echo "$REPOSITORY"
 
-         - uses: Azure/docker-login@v1
-           with:
-              login-server: $REGISTRY
-              username: ${{ secrets.REGISTRY_USERNAME }}
-              password: ${{ secrets.REGISTRY_PASSWORD }}
-
-         - run: |
-              docker build . -t ${REPOSITORY}
-              docker push ${REPOSITORY}
-
-         - uses: Azure/k8s-set-context@v1
-           with:
-              kubeconfig: ${{ secrets.KUBE_CONFIG }}
-
-#          - uses: Azure/k8s-create-secret@v1
+#          - uses: Azure/docker-login@v1
 #            with:
-#               container-registry-url: contoso.azurecr.io
-#               container-registry-username: ${{ secrets.REGISTRY_USERNAME }}
-#               container-registry-password: ${{ secrets.REGISTRY_PASSWORD }}
-#               secret-name: demo-k8s-secret
+#               login-server: $REGISTRY
+#               username: ${{ secrets.REGISTRY_USERNAME }}
+#               password: ${{ secrets.REGISTRY_PASSWORD }}
 
-         - uses: azure/k8s-bake@v2.2
-           with:
-              renderEngine: 'helm'
-              helmChart: '$CHARTS_DIR'
-              overrideFiles: '$CHARTS_DIR/values.yaml'
-              overrides: |
-                 fullnameOverride=$SERVICE_NAME
-                 release=$ENVIRONMENT
-                 image.repository=${REPOSITORY}
-              helm-version: 'latest'
-           id: bake
+#          - run: |
+#               docker build . -t ${REPOSITORY}
+#               docker push ${REPOSITORY}
 
-         - uses: Azure/k8s-deploy@v1
-           with:
-              manifests: ${{ steps.bake.outputs.manifestsBundle }}
-              images: |
-                 ${REPOSITORY}
-#               imagepullsecrets: |
-#                  demo-k8s-secret
+#          - uses: Azure/k8s-set-context@v1
+#            with:
+#               kubeconfig: ${{ secrets.KUBE_CONFIG }}
+
+# #          - uses: Azure/k8s-create-secret@v1
+# #            with:
+# #               container-registry-url: contoso.azurecr.io
+# #               container-registry-username: ${{ secrets.REGISTRY_USERNAME }}
+# #               container-registry-password: ${{ secrets.REGISTRY_PASSWORD }}
+# #               secret-name: demo-k8s-secret
+
+#          - uses: azure/k8s-bake@v2.2
+#            with:
+#               renderEngine: 'helm'
+#               helmChart: '$CHARTS_DIR'
+#               overrideFiles: '$CHARTS_DIR/values.yaml'
+#               overrides: |
+#                  fullnameOverride=$SERVICE_NAME
+#                  release=$ENVIRONMENT
+#                  image.repository=${REPOSITORY}
+#               helm-version: 'latest'
+#            id: bake
+
+#          - uses: Azure/k8s-deploy@v1
+#            with:
+#               manifests: ${{ steps.bake.outputs.manifestsBundle }}
+#               images: |
+#                  ${REPOSITORY}
+# #               imagepullsecrets: |
+# #                  demo-k8s-secret
