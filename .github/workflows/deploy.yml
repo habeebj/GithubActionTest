@@ -36,6 +36,16 @@ jobs:
          - uses: Azure/k8s-set-context@v1
            with:
               kubeconfig: ${{ secrets.KUBE_CONFIG }}
+         
+         - name: Helm Bake
+           uses: wahyd4/kubectl-helm-action@master
+           env:
+              KUBE_CONFIG_DATA: ${{ secrets.KUBE_CONFIG_DATA }}
+           with:
+              args: |
+                helm template --release-name $ENVIRONMENT charts --set fullnameOverride=$SERVICE_NAME --set nameOverride=$SERVICE_NAME --set image.repository=$REGISTRY/$SERVICE_NAME:$GITHUB_RUN_NUMBER > deployment.yaml
+
+            
 
 #          - uses: Azure/k8s-create-secret@v1
 #            with:
@@ -44,22 +54,22 @@ jobs:
 #               container-registry-password: ${{ secrets.REGISTRY_PASSWORD }}
 #               secret-name: demo-k8s-secret
 
-         - uses: azure/k8s-bake@v2.2
-           with:
-              renderEngine: 'helm'
-              helmChart: './charts/'
-#               overrideFiles: './charts/values.yaml'
-              overrides: |
-                 fullnameOverride=$SERVICE_NAME
-                 release=$ENVIRONMENT
-                 image.repository=$REGISTRY/$SERVICE_NAME:$GITHUB_RUN_NUMBER
-              helm-version: 'latest'
-           id: bake
+#          - uses: azure/k8s-bake@v2.2
+#            with:
+#               renderEngine: 'helm'
+#               helmChart: './charts/'
+# #               overrideFiles: './charts/values.yaml'
+#               overrides: |
+#                  fullnameOverride=$SERVICE_NAME
+#                  release=$ENVIRONMENT
+#                  image.repository=$REGISTRY/$SERVICE_NAME:$GITHUB_RUN_NUMBER
+#               helm-version: 'latest'
+#            id: bake
 
-         - uses: Azure/k8s-deploy@v1
-           with:
-              manifests: ${{ steps.bake.outputs.manifestsBundle }}
-#               images: |
-#                  $REGISTRY/$SERVICE_NAME:$GITHUB_RUN_NUMBER
-#               imagepullsecrets: |
-#                  demo-k8s-secret
+#          - uses: Azure/k8s-deploy@v1
+#            with:
+#               manifests: ${{ steps.bake.outputs.manifestsBundle }}
+# #               images: |
+# #                  $REGISTRY/$SERVICE_NAME:$GITHUB_RUN_NUMBER
+# #               imagepullsecrets: |
+# #                  demo-k8s-secret
