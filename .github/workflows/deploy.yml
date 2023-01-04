@@ -48,7 +48,7 @@ jobs:
            with:
               renderEngine: 'helm'
               helmChart: './charts/'
-              overrideFiles: '$CHARTS_DIR/values.yaml'
+#               overrideFiles: './charts/values.yaml'
               overrides: |
                  fullnameOverride=$SERVICE_NAME
                  release=$ENVIRONMENT
