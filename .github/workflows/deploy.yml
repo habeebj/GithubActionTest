@@ -7,46 +7,58 @@ on:
 env:
   REGISTRY: registry.naijavax.com
   SERVICE_NAME: testapi
-#   CHARTS_DIR: ./charts/
+  #   CHARTS_DIR: ./charts/
   ENVIRONMENT: development
 
 jobs:
-   build:
-      runs-on: ubuntu-latest
-      steps:
-         - uses: actions/checkout@v3
-         - name: Test
-           run: echo "$REGISTRY/$SERVICE_NAME:$GITHUB_RUN_NUMBER"
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Test
+        run: echo "$REGISTRY/$SERVICE_NAME:$GITHUB_RUN_NUMBER"
 
-         - uses: Azure/docker-login@v1
-           with:
-              login-server: $REGISTRY
-              username: ${{ secrets.REGISTRY_USERNAME }}
-              password: ${{ secrets.REGISTRY_PASSWORD }}
+      - uses: Azure/docker-login@v1
+        with:
+          login-server: $REGISTRY
+          username: ${{ secrets.REGISTRY_USERNAME }}
+          password: ${{ secrets.REGISTRY_PASSWORD }}
 
-         - name: Docker Login
-           run: docker login registry.naijavax.com -u ${{ secrets.REGISTRY_USERNAME }} -p ${{ secrets.REGISTRY_PASSWORD }}
-         
-         - name: Docker Build
-           run: docker build . -t $REGISTRY/$SERVICE_NAME:$GITHUB_RUN_NUMBER
-         
-         - name: Docker Push
-           run: docker push $REGISTRY/$SERVICE_NAME:$GITHUB_RUN_NUMBER
+      - name: Docker Login
+        run: docker login $REGISTRY -u ${{ secrets.REGISTRY_USERNAME }} -p ${{ secrets.REGISTRY_PASSWORD }}
 
-         - uses: Azure/k8s-set-context@v1
-           with:
-              kubeconfig: ${{ secrets.KUBE_CONFIG }}
-         
-         - name: Helm Bake
-           uses: wahyd4/kubectl-helm-action@master
-           env:
-              KUBE_CONFIG_DATA: ${{ secrets.KUBE_CONFIG_DATA }}
-           with:
-              args: |
-                helm template --release-name $ENVIRONMENT charts --set fullnameOverride=$SERVICE_NAME --set nameOverride=$SERVICE_NAME --set image.repository=$REGISTRY/$SERVICE_NAME:$GITHUB_RUN_NUMBER > deployment.yaml
+      - name: Docker Build
+        run: docker build . -t $REGISTRY/$SERVICE_NAME:$GITHUB_RUN_NUMBER
 
-            
+      - name: Docker Push
+        run: docker push $REGISTRY/$SERVICE_NAME:$GITHUB_RUN_NUMBER
 
+      # - uses: Azure/k8s-set-context@v1
+      #   with:
+      #     kubeconfig: ${{ secrets.KUBE_CONFIG }}
+
+      - name: Helm Bake
+        uses: wahyd4/kubectl-helm-action@master
+        # env:
+        # KUBE_CONFIG_DATA: ${{ secrets.KUBE_CONFIG }}
+        with:
+          args: |
+            helm template --release-name $ENVIRONMENT charts --set fullnameOverride=$SERVICE_NAME --set nameOverride=$SERVICE_NAME --set image.repository=$REGISTRY/$SERVICE_NAME:$GITHUB_RUN_NUMBER > deployment.yaml
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Download a Build Artifact
+        uses: actions/download-artifact@v3.0.1
+
+      - name: Deploy to cluster
+        uses: wahyd4/kubectl-helm-action@master
+        env:
+          KUBE_CONFIG_DATA: ${{ secrets.KUBE_CONFIG }}
+        with:
+          args: kubectl apply -f deployment.yaml
 #          - uses: Azure/k8s-create-secret@v1
 #            with:
 #               container-registry-url: contoso.azurecr.io
