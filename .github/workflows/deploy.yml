@@ -36,29 +36,39 @@ jobs:
       # - uses: Azure/k8s-set-context@v1
       #   with:
       #     kubeconfig: ${{ secrets.KUBE_CONFIG }}
-
+      
       - name: Helm Bake
-        uses: wahyd4/kubectl-helm-action@master
-        env:
-          KUBE_CONFIG_DATA: ${{ secrets.KUBE_CONFIG }}
+        uses: licenseware/helm@v1.2
         with:
-          args: |
-            helm template --release-name $ENVIRONMENT charts --set fullnameOverride=$SERVICE_NAME --set nameOverride=$SERVICE_NAME --set image.repository=$REGISTRY/$SERVICE_NAME:$GITHUB_RUN_NUMBER > deployment.yaml
+          action: template charts > deployment.yaml
+          values: "fullnameOverride=$SERVICE_NAME,nameOverride=$SERVICE_NAME,image.repository=$REGISTRY/$SERVICE_NAME:$GITHUB_RUN_NUMBER"
+      
+      - name: Preview
+        run: |
+          ls
+          cat deployment.yaml
+#       - name: Helm Bake
+#         uses: wahyd4/kubectl-helm-action@master
+#         env:
+#           KUBE_CONFIG_DATA: ${{ secrets.KUBE_CONFIG }}
+#         with:
+#           args: |
+#             helm template --release-name $ENVIRONMENT charts --set fullnameOverride=$SERVICE_NAME --set nameOverride=$SERVICE_NAME --set image.repository=$REGISTRY/$SERVICE_NAME:$GITHUB_RUN_NUMBER > deployment.yaml
 
-  deploy:
-    needs: build
-    runs-on: ubuntu-latest
+#   deploy:
+#     needs: build
+#     runs-on: ubuntu-latest
 
-    steps:
-      - name: Download a Build Artifact
-        uses: actions/download-artifact@v3.0.1
+#     steps:
+#       - name: Download a Build Artifact
+#         uses: actions/download-artifact@v3.0.1
 
-      - name: Deploy to cluster
-        uses: wahyd4/kubectl-helm-action@master
-        env:
-          KUBE_CONFIG_DATA: ${{ secrets.KUBE_CONFIG }}
-        with:
-          args: kubectl apply -f deployment.yaml
+#       - name: Deploy to cluster
+#         uses: wahyd4/kubectl-helm-action@master
+#         env:
+#           KUBE_CONFIG_DATA: ${{ secrets.KUBE_CONFIG }}
+#         with:
+#           args: kubectl apply -f deployment.yaml
 #          - uses: Azure/k8s-create-secret@v1
 #            with:
 #               container-registry-url: contoso.azurecr.io
