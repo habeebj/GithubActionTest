@@ -62,17 +62,17 @@ jobs:
       - name: Preview 
         run: ls
       
-      - name: Deploy to cluster
-        uses: wahyd4/kubectl-helm-action@master
-        env:
-          KUBE_CONFIG_DATA: ${{ secrets.KUBE_CONFIG }}
+#       - name: Deploy to cluster
+#         uses: wahyd4/kubectl-helm-action@master
+#         env:
+#           KUBE_CONFIG_DATA: ${{ secrets.KUBE_CONFIG }}
+#         with:
+#           args: kubectl apply -f .
+      
+      - uses: Azure/k8s-set-context@v1
         with:
-          args: kubectl apply -f .
+          kubeconfig: ${{ secrets.KUBE_CONFIG }}
       
-#       - uses: Azure/k8s-set-context@v1
-#         with:
-#           kubeconfig: ${{ secrets.KUBE_CONFIG }}
-      
-#       - uses: Azure/k8s-deploy@v1
-#         with:
-#           manifests: deployment.yaml
+      - uses: Azure/k8s-deploy@v1
+        with:
+          manifests: ./artifact/deployment.yaml
