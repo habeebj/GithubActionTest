@@ -8,7 +8,7 @@ env:
   REGISTRY: registry.naijavax.com
   SERVICE_NAME: testapi
   TAG: ${{ github.sha }}
-  REPOSITORY: ${REGISTRY}/${SERVICE_NAME}:${TAG}
+  REPOSITORY: ${{en.REGISTRY}}/${{env.SERVICE_NAME}}:${{env.TAG}}
   CHARTS_DIR: ./charts/
   ENVIRONMENT: development
 
