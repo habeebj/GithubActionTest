@@ -10,6 +10,7 @@ env:
   #   CHARTS_DIR: ./charts/
   ENVIRONMENT: development
   DEPLOYMENT_FILE: deploy.yaml
+  OUTPUT_DIR: ./output
 
 jobs:
   build:
@@ -52,7 +53,8 @@ jobs:
       - name: Upload Build Artifact
         uses: actions/upload-artifact@v3.1.1
         with:
-          path: ./output
+          path: ${{ env.OUTPUT_DIR }}
+#           path: ./output
 
   deploy:
     needs: build
@@ -64,8 +66,6 @@ jobs:
       
       - name: Preview 
         run: |
-          ls
-          cd ./artifact/output
           ls
       
 #       - name: Deploy to cluster
