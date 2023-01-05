@@ -9,6 +9,7 @@ env:
   SERVICE_NAME: testapi
   #   CHARTS_DIR: ./charts/
   ENVIRONMENT: development
+  DEPLOYMENT_FILE: deploy.yaml
 
 jobs:
   build:
@@ -41,7 +42,7 @@ jobs:
       
       - name: Helm bake
         run: |
-          helm template --release-name $ENVIRONMENT charts --set release=$ENVIRONMENT --set fullnameOverride=$SERVICE_NAME --set nameOverride=$SERVICE_NAME --set image.repository=$REGISTRY/$SERVICE_NAME:$GITHUB_RUN_NUMBER > deployment.yaml
+          helm template --release-name $ENVIRONMENT charts --set release=$ENVIRONMENT --set fullnameOverride=$SERVICE_NAME --set nameOverride=$SERVICE_NAME --set image.repository=$REGISTRY/$SERVICE_NAME:$GITHUB_RUN_NUMBER > $DEPLOYMENT_FILE
       
       - name: Preview
         run: |
@@ -49,7 +50,7 @@ jobs:
       - name: Upload Build Artifact
         uses: actions/upload-artifact@v3.1.1
         with:
-          path: ./deployment.yaml
+          path: ./$DEPLOYMENT_FILE
 
   deploy:
     needs: build
@@ -75,4 +76,4 @@ jobs:
       
       - uses: Azure/k8s-deploy@v1
         with:
-          manifests: ./artifact/deployment.yaml
+          manifests: ./artifact/$DEPLOYMENT_FILE
