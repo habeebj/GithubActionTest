@@ -43,18 +43,17 @@ jobs:
       
       - name: Helm bake
         run: |
-          mkdir ./output
-          helm template --release-name $ENVIRONMENT charts --set release=$ENVIRONMENT --set fullnameOverride=$SERVICE_NAME --set nameOverride=$SERVICE_NAME --set image.repository=$REGISTRY/$SERVICE_NAME:$GITHUB_RUN_NUMBER > ./output/$DEPLOYMENT_FILE
+          mkdir $OUTPUT_DIR
+          helm template --release-name $ENVIRONMENT charts --set release=$ENVIRONMENT --set fullnameOverride=$SERVICE_NAME --set nameOverride=$SERVICE_NAME --set image.repository=$REGISTRY/$SERVICE_NAME:$GITHUB_RUN_NUMBER > $OUTPUT_DIR/$DEPLOYMENT_FILE
       
       - name: Preview
         run: |
           ls
-          cat ./output/$DEPLOYMENT_FILE
+          cat $OUTPUT_DIR/$DEPLOYMENT_FILE
       - name: Upload Build Artifact
         uses: actions/upload-artifact@v3.1.1
         with:
           path: ${{ env.OUTPUT_DIR }}
-#           path: ./output
 
   deploy:
     needs: build
@@ -66,7 +65,7 @@ jobs:
       
       - name: Preview 
         run: |
-          ls
+          tree
       
 #       - name: Deploy to cluster
 #         uses: wahyd4/kubectl-helm-action@master
