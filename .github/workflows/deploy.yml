@@ -28,11 +28,11 @@ jobs:
       - name: Docker Login
         run: docker login $REGISTRY -u ${{ secrets.REGISTRY_USERNAME }} -p ${{ secrets.REGISTRY_PASSWORD }}
 
-      - name: Docker Build
-        run: docker build . -t $REGISTRY/$SERVICE_NAME:$GITHUB_RUN_NUMBER
+#       - name: Docker Build
+#         run: docker build . -t $REGISTRY/$SERVICE_NAME:$GITHUB_RUN_NUMBER
 
-      - name: Docker Push
-        run: docker push $REGISTRY/$SERVICE_NAME:$GITHUB_RUN_NUMBER
+#       - name: Docker Push
+#         run: docker push $REGISTRY/$SERVICE_NAME:$GITHUB_RUN_NUMBER
       
       - name: Install Helm
         run: |
@@ -42,7 +42,7 @@ jobs:
       
       - name: Helm bake
         run: |
-          helm template --release-name $ENVIRONMENT charts --set release=$ENVIRONMENT --set fullnameOverride=$SERVICE_NAME --set nameOverride=$SERVICE_NAME --set image.repository=$REGISTRY/$SERVICE_NAME:$GITHUB_RUN_NUMBER > $DEPLOYMENT_FILE
+          helm template --release-name $ENVIRONMENT charts --set release=$ENVIRONMENT --set fullnameOverride=$SERVICE_NAME --set nameOverride=$SERVICE_NAME --set image.repository=$REGISTRY/$SERVICE_NAME:$GITHUB_RUN_NUMBER > ./deployments/$DEPLOYMENT_FILE
       
       - name: Preview
         run: |
@@ -51,7 +51,7 @@ jobs:
       - name: Upload Build Artifact
         uses: actions/upload-artifact@v3.1.1
         with:
-          path: ./$DEPLOYMENT_FILE
+          path: ./deployments
 
   deploy:
     needs: build
@@ -64,7 +64,7 @@ jobs:
       - name: Preview 
         run: |
           ls
-          cd ./artifact
+          cd ./artifact/deployments
           ls
       
 #       - name: Deploy to cluster
@@ -74,10 +74,10 @@ jobs:
 #         with:
 #           args: kubectl apply -f .
       
-      - uses: Azure/k8s-set-context@v1
-        with:
-          kubeconfig: ${{ secrets.KUBE_CONFIG }}
+#       - uses: Azure/k8s-set-context@v1
+#         with:
+#           kubeconfig: ${{ secrets.KUBE_CONFIG }}
       
-      - uses: Azure/k8s-deploy@v1
-        with:
-          manifests: ./artifact/$
+#       - uses: Azure/k8s-deploy@v1
+#         with:
+#           manifests: ./artifact/$
