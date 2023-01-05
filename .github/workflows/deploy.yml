@@ -65,7 +65,7 @@ jobs:
       - name: Preview 
         run: |
           ls
-          cd ./artifact/deployments
+          cd ./artifact/output
           ls
       
 #       - name: Deploy to cluster
