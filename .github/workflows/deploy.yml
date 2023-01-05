@@ -46,7 +46,7 @@ jobs:
       
       - name: Preview
         run: |
-          cat deployment.yaml
+          cat $DEPLOYMENT_FILE
       - name: Upload Build Artifact
         uses: actions/upload-artifact@v3.1.1
         with:
@@ -76,4 +76,6 @@ jobs:
       
       - uses: Azure/k8s-deploy@v1
         with:
-          manifests: ./artifact/$DEPLOYMENT_FILE
+          manifests: ./artifact/$
+          
+          _FILE
