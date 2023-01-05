@@ -48,7 +48,7 @@ jobs:
       - name: Preview
         run: |
           ls
-          cat $DEPLOYMENT_FILE
+          cat ./output/$DEPLOYMENT_FILE
       - name: Upload Build Artifact
         uses: actions/upload-artifact@v3.1.1
         with:
